@@ -7,7 +7,8 @@ add numbers or change the decision.
 import json
 import os
 
-import anthropic
+# The anthropic SDK is imported only when a summary is requested: it is a large
+# package and loading it at start-up would slow down every API start.
 
 MODEL = "claude-opus-5-5"
 LANGUAGES = {"en": "English", "am": "Amharic"}
@@ -36,7 +37,9 @@ def ai_available():
 def summarise(decision, language="en", client=None):
     if language not in LANGUAGES:
         language = "en"
-    client = client or anthropic.Anthropic()
+    if client is None:
+        import anthropic
+        client = anthropic.Anthropic()
     payload = {
         "probability_of_default": decision["probability"],
         "score": decision["score"],
@@ -59,14 +62,8 @@ def summarise(decision, language="en", client=None):
             betas=["server-side-fallback-2026-07-01"],
             fallbacks="default",
         )
-    except anthropic.AuthenticationError as exc:
-        raise AiError("The AI key was rejected. Check ANTHROPIC_API_KEY in .env.") from exc
-    except anthropic.RateLimitError as exc:
-        raise AiError("The AI service is busy. Try again in a minute.") from exc
-    except anthropic.APIConnectionError as exc:
-        raise AiError("Could not reach the AI service.") from exc
-    except anthropic.APIStatusError as exc:
-        raise AiError(f"The AI service returned an error ({exc.status_code}).") from exc
+    except Exception as exc:
+        raise _friendly_error(exc) from exc
 
     if response.stop_reason == "refusal":
         raise AiError("The AI declined to summarise this decision. The decision itself is unaffected.")
@@ -74,3 +71,17 @@ def summarise(decision, language="en", client=None):
     if not text:
         raise AiError("The AI returned an empty summary. Try again.")
     return {"text": text, "model": response.model, "language": LANGUAGES[language]}
+
+
+def _friendly_error(exc):
+    import anthropic
+
+    if isinstance(exc, anthropic.AuthenticationError):
+        return AiError("The AI key was rejected. Check ANTHROPIC_API_KEY in .env.")
+    if isinstance(exc, anthropic.RateLimitError):
+        return AiError("The AI service is busy. Try again in a minute.")
+    if isinstance(exc, anthropic.APIConnectionError):
+        return AiError("Could not reach the AI service.")
+    if isinstance(exc, anthropic.APIStatusError):
+        return AiError(f"The AI service returned an error ({exc.status_code}).")
+    return AiError("The AI summary failed unexpectedly. The decision itself is unaffected.")
