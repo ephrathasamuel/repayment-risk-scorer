@@ -103,15 +103,12 @@ def create_app(cfg: Settings = default_settings, ai_client=None):
     # ---------- scoring ----------
 
     def save_decision(db, user, bundle, inputs, result, reference, source):
+        """Add an application and its decision to the session; the caller flushes once."""
         appl = Application(reference=reference, inputs=inputs, source=source, created_by=user.id)
-        db.add(appl)
-        db.flush()
-        d = Decision(application_id=appl.id, model_version=bundle["version"], probability=result["probability"],
+        d = Decision(application=appl, model_version=bundle["version"], probability=result["probability"],
                      score=result["score"], band=result["band"], recommendation=result["recommendation"],
                      contributions=result["contributions"], offer=policy.offer(result["band"], inputs["credit_limit"]))
-        d.application = appl
-        db.add(d)
-        db.flush()
+        db.add_all([appl, d])
         return appl, d
 
     def decision_out(db, d, threshold):
@@ -141,6 +138,7 @@ def create_app(cfg: Settings = default_settings, ai_client=None):
         bundle = active_model(db)
         row = body.to_row()
         appl, d = save_decision(db, user, bundle, row, scoring.score_one(bundle, row), body.reference.strip(), "form")
+        db.flush()
         audit(db, user, "score_application", bundle["version"], application_id=appl.id,
               band=d.band, probability=d.probability)
         db.commit()
@@ -189,6 +187,7 @@ def create_app(cfg: Settings = default_settings, ai_client=None):
             for body, res in zip(valid, results):
                 _, d = save_decision(db, user, bundle, body.to_row(), res, body.reference, "batch")
                 decisions.append(d)
+            db.flush()
         audit(db, user, "score_batch", bundle["version"], file=file.filename, scored=len(decisions),
               rejected=len(rejected))
         db.commit()
