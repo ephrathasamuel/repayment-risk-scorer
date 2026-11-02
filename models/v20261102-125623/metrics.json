@@ -1,0 +1,218 @@
+{
+  "version": "v20261102-125623",
+  "algorithm": "LightGBM gradient-boosted trees",
+  "trained_at": "2026-11-02T12:56:23+00:00",
+  "data": {
+    "source": "default of credit card clients.xls",
+    "rows": 30000,
+    "default_rate": 0.2212,
+    "split": {
+      "train": 18000,
+      "validation": 6000,
+      "test": 6000
+    }
+  },
+  "features": [
+    "credit_limit",
+    "age",
+    "education",
+    "pay_status_1",
+    "pay_status_2",
+    "pay_status_3",
+    "pay_status_4",
+    "pay_status_5",
+    "pay_status_6",
+    "utilisation_latest",
+    "utilisation_avg",
+    "months_late",
+    "worst_delay",
+    "repayment_ratio",
+    "months_paid_nothing",
+    "bill_trend",
+    "paid_latest"
+  ],
+  "best_iteration": 221,
+  "test": {
+    "auc": 0.7922,
+    "brier": 0.1309,
+    "threshold": 0.3,
+    "confusion_matrix": {
+      "tn": 4076,
+      "fp": 597,
+      "fn": 584,
+      "tp": 743
+    },
+    "precision": 0.5545,
+    "recall": 0.5599,
+    "calibration": [
+      {
+        "predicted": 0.0504,
+        "observed": 0.045
+      },
+      {
+        "predicted": 0.0684,
+        "observed": 0.0517
+      },
+      {
+        "predicted": 0.0876,
+        "observed": 0.1017
+      },
+      {
+        "predicted": 0.1129,
+        "observed": 0.1
+      },
+      {
+        "predicted": 0.1391,
+        "observed": 0.14
+      },
+      {
+        "predicted": 0.1647,
+        "observed": 0.155
+      },
+      {
+        "predicted": 0.1971,
+        "observed": 0.1933
+      },
+      {
+        "predicted": 0.2714,
+        "observed": 0.2533
+      },
+      {
+        "predicted": 0.4115,
+        "observed": 0.45
+      },
+      {
+        "predicted": 0.6999,
+        "observed": 0.7217
+      }
+    ]
+  },
+  "baseline_logistic_regression_test": {
+    "auc": 0.7611,
+    "brier": 0.1388,
+    "threshold": 0.31,
+    "confusion_matrix": {
+      "tn": 3996,
+      "fp": 677,
+      "fn": 588,
+      "tp": 739
+    },
+    "precision": 0.5219,
+    "recall": 0.5569,
+    "calibration": [
+      {
+        "predicted": 0.0723,
+        "observed": 0.0583
+      },
+      {
+        "predicted": 0.0939,
+        "observed": 0.085
+      },
+      {
+        "predicted": 0.1054,
+        "observed": 0.1233
+      },
+      {
+        "predicted": 0.1154,
+        "observed": 0.13
+      },
+      {
+        "predicted": 0.1263,
+        "observed": 0.1167
+      },
+      {
+        "predicted": 0.1393,
+        "observed": 0.15
+      },
+      {
+        "predicted": 0.1808,
+        "observed": 0.1883
+      },
+      {
+        "predicted": 0.297,
+        "observed": 0.2467
+      },
+      {
+        "predicted": 0.4248,
+        "observed": 0.445
+      },
+      {
+        "predicted": 0.6506,
+        "observed": 0.6683
+      }
+    ]
+  },
+  "segments_test": {
+    "sex": [
+      {
+        "group": "female",
+        "count": 3628,
+        "actual_default_rate": 0.2081,
+        "mean_predicted": 0.2162,
+        "flag_rate": 0.212,
+        "auc": 0.7962
+      },
+      {
+        "group": "male",
+        "count": 2372,
+        "actual_default_rate": 0.2411,
+        "mean_predicted": 0.2265,
+        "flag_rate": 0.2407,
+        "auc": 0.7846
+      }
+    ],
+    "age_band": [
+      {
+        "group": "under 30",
+        "count": 1926,
+        "actual_default_rate": 0.2186,
+        "mean_predicted": 0.2311,
+        "flag_rate": 0.2435,
+        "auc": 0.7888
+      },
+      {
+        "group": "30-39",
+        "count": 2206,
+        "actual_default_rate": 0.199,
+        "mean_predicted": 0.1996,
+        "flag_rate": 0.1868,
+        "auc": 0.7976
+      },
+      {
+        "group": "40-49",
+        "count": 1296,
+        "actual_default_rate": 0.2454,
+        "mean_predicted": 0.2267,
+        "flag_rate": 0.2369,
+        "auc": 0.7945
+      },
+      {
+        "group": "50+",
+        "count": 572,
+        "actual_default_rate": 0.2605,
+        "mean_predicted": 0.249,
+        "flag_rate": 0.2657,
+        "auc": 0.7723
+      }
+    ]
+  },
+  "feature_medians": {
+    "credit_limit": 140000.0,
+    "age": 34.0,
+    "education": 2.0,
+    "pay_status_1": 0.0,
+    "pay_status_2": 0.0,
+    "pay_status_3": 0.0,
+    "pay_status_4": 0.0,
+    "pay_status_5": 0.0,
+    "pay_status_6": 0.0,
+    "utilisation_latest": 0.31700153846153845,
+    "utilisation_avg": 0.2870970567375887,
+    "months_late": 0.0,
+    "worst_delay": 0.0,
+    "repayment_ratio": 0.12409055001009367,
+    "months_paid_nothing": 0.0,
+    "bill_trend": 0.00685,
+    "paid_latest": 2138.5
+  }
+}
