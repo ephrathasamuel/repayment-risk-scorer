@@ -1,0 +1,40 @@
+# docker compose up --build   ->  http://localhost:3000
+# Reads secrets (SECRET_KEY, ADMIN_*, ANALYST_*, ANTHROPIC_API_KEY) from .env.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: scorer
+      POSTGRES_PASSWORD: scorer
+      POSTGRES_DB: scorer
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scorer"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql+psycopg://scorer:scorer@db:5432/scorer
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+
+  web:
+    build: ./frontend
+    environment:
+      API_URL: http://api:8000
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
