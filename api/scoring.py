@@ -38,9 +38,11 @@ def score_frame(bundle, raw):
     raw = clean(raw[INPUT_COLUMNS])
     X = build_features(raw)[bundle["features"]]
     model = bundle["model"]
-    probs = model.predict_proba(X)[:, 1]
+    # One thread per request: the web server already runs requests in parallel, and
+    # OpenMP worker pools inside request threads can stall.
+    probs = model.predict_proba(X, num_threads=1)[:, 1]
     # LightGBM's built-in TreeSHAP: per-feature contributions in log-odds; last column is the base value.
-    contrib = model.predict(X, pred_contrib=True)
+    contrib = model.predict(X, pred_contrib=True, num_threads=1)
     medians = bundle["metrics"]["feature_medians"]
     results = []
     for i, p in enumerate(probs):
