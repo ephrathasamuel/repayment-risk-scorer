@@ -3,9 +3,10 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .env
-data/raw/
-data/*.db
+data/
 frontend/node_modules/
 frontend/.next/
 frontend/test-results/
 frontend/playwright-report/
+AGENTS.md
+CLAUDE.md
