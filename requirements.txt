@@ -1,0 +1,14 @@
+fastapi>=0.120
+uvicorn[standard]>=0.38
+sqlalchemy>=2.0
+psycopg[binary]>=3.2
+pydantic>=2.11
+python-multipart>=0.0.20
+itsdangerous>=2.2
+python-dotenv>=1.1
+anthropic>=2.3
+pandas>=2.3
+scikit-learn>=1.7
+lightgbm>=4.6
+joblib>=1.5
+xlrd>=2.0
