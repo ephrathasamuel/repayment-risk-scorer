@@ -45,7 +45,8 @@ export default function Shell({ children }) {
 
   async function signOut() {
     await api("/api/auth/logout", { method: "POST" }).catch(() => {});
-    window.location.href = "/login";
+    // A full page load on sign-out clears every bit of client state.
+    window.location.href = new URL("/login", window.location.origin).href;
   }
 
   return (

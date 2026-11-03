@@ -14,21 +14,32 @@ export default function ModelsPage() {
 
   const isAdmin = user?.role === "admin";
 
+  // Fetch everything first, then set state in one place, so the effect never sets state synchronously.
+  async function fetchAll() {
+    const [me, list] = await Promise.all([api("/api/auth/me"), api("/api/models")]);
+    const active = list.find((m) => m.is_active) ?? list[0];
+    const activeDetail = active ? await api(`/api/models/${active.version}`) : null;
+    const auditLog = me.role === "admin" ? await api("/api/audit?limit=25") : [];
+    return { me, list, activeDetail, auditLog };
+  }
+
+  function apply({ me, list, activeDetail, auditLog }) {
+    setUser(me);
+    setModels(list);
+    setDetail(activeDetail);
+    setAudit(auditLog);
+  }
+
   async function load() {
     try {
-      const [me, list] = await Promise.all([api("/api/auth/me"), api("/api/models")]);
-      setUser(me);
-      setModels(list);
-      const active = list.find((m) => m.is_active) ?? list[0];
-      if (active) setDetail(await api(`/api/models/${active.version}`));
-      if (me.role === "admin") setAudit(await api("/api/audit?limit=25"));
+      apply(await fetchAll());
     } catch (e) {
       setError(e.message);
     }
   }
 
   useEffect(() => {
-    load();
+    fetchAll().then(apply).catch((e) => setError(e.message));
   }, []);
 
   async function activate(version) {

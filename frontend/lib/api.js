@@ -35,7 +35,7 @@ export async function api(path, { method = "GET", json, body, signal } = {}) {
   }
   if (res.status === 401 && path !== "/api/auth/login" && typeof window !== "undefined") {
     const next = encodeURIComponent(window.location.pathname);
-    window.location.href = `/login?next=${next}`;
+    window.location.href = new URL(`/login?next=${next}`, window.location.origin).href;
     throw new ApiError(401, "Please sign in.");
   }
   if (res.status === 204) return null;
