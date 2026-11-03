@@ -1,6 +1,7 @@
 """Database tables. SQLite for local runs, PostgreSQL in Docker (set DATABASE_URL)."""
 
 from datetime import datetime, timezone
+from pathlib import Path
 
 from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
@@ -74,6 +75,9 @@ class AuditEvent(Base):
 
 
 def make_engine(url):
+    if url.startswith("sqlite:///"):
+        # data/ is git-ignored, so a fresh clone (or CI) has no folder for the database file yet.
+        Path(url.removeprefix("sqlite:///")).parent.mkdir(parents=True, exist_ok=True)
     kwargs = {"connect_args": {"check_same_thread": False}} if url.startswith("sqlite") else {"pool_pre_ping": True}
     return create_engine(url, **kwargs)
 
