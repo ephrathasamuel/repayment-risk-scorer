@@ -31,7 +31,7 @@ export default function FactorChart({ factors, limit = 10 }) {
               <div className="relative mt-1 h-3 rounded bg-slate-100">
                 <div className="absolute inset-y-0 left-1/2 w-px bg-slate-300" />
                 <div
-                  className={`absolute inset-y-0 rounded ${up ? "bg-red-500" : "bg-emerald-500"}`}
+                  className={`absolute inset-y-0 rounded ${up ? "bg-wine-600" : "bg-brass"}`}
                   style={up ? { left: "50%", width: `${w}%` } : { right: "50%", width: `${w}%` }}
                   title={`${f.contribution > 0 ? "+" : ""}${f.contribution} log-odds`}
                 />
