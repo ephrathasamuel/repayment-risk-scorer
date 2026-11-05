@@ -52,7 +52,7 @@ export default function DecisionView() {
   return (
     <>
       <div className="mb-4 text-sm">
-        <Link href="/" className="text-teal-700 hover:underline">← Portfolio</Link>
+        <Link href="/" className="text-wine-700 hover:underline">← Portfolio</Link>
       </div>
 
       <section className="card">

@@ -78,9 +78,9 @@ export default function ModelsPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {models.map((m) => (
-                <tr key={m.version} className={detail?.version === m.version ? "bg-teal-50/50" : ""}>
+                <tr key={m.version} className={detail?.version === m.version ? "bg-wine-50/50" : ""}>
                   <td className="px-4 py-2">
-                    <button className="font-mono text-teal-800 hover:underline" onClick={async () => setDetail(await api(`/api/models/${m.version}`))}>
+                    <button className="font-mono text-wine-800 hover:underline" onClick={async () => setDetail(await api(`/api/models/${m.version}`))}>
                       {m.version}
                     </button>
                     <div className="text-xs text-slate-500">{m.algorithm}</div>
@@ -120,7 +120,7 @@ export default function ModelsPage() {
               <div className="rounded-md bg-emerald-50 p-3"><div className="text-xs text-slate-500">Repaid, not flagged</div><div className="text-xl font-semibold tabular-nums">{t.confusion_matrix.tn.toLocaleString()}</div></div>
               <div className="rounded-md bg-amber-50 p-3"><div className="text-xs text-slate-500">Repaid, flagged</div><div className="text-xl font-semibold tabular-nums">{t.confusion_matrix.fp.toLocaleString()}</div></div>
               <div className="rounded-md bg-red-50 p-3"><div className="text-xs text-slate-500">Defaulted, missed</div><div className="text-xl font-semibold tabular-nums">{t.confusion_matrix.fn.toLocaleString()}</div></div>
-              <div className="rounded-md bg-teal-50 p-3"><div className="text-xs text-slate-500">Defaulted, flagged</div><div className="text-xl font-semibold tabular-nums">{t.confusion_matrix.tp.toLocaleString()}</div></div>
+              <div className="rounded-md bg-wine-50 p-3"><div className="text-xs text-slate-500">Defaulted, flagged</div><div className="text-xl font-semibold tabular-nums">{t.confusion_matrix.tp.toLocaleString()}</div></div>
             </div>
             <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-slate-500">Calibration (predicted vs. observed default rate)</h3>
             <div className="mt-2 space-y-1">
@@ -128,8 +128,8 @@ export default function ModelsPage() {
                 <div key={i} className="flex items-center gap-2 text-xs">
                   <span className="w-14 tabular-nums text-slate-500">{pct(c.predicted, 0)}</span>
                   <span className="relative h-2 flex-1 rounded bg-slate-100">
-                    <span className="absolute inset-y-0 left-0 rounded bg-teal-600/40" style={{ width: `${c.predicted * 100}%` }} />
-                    <span className="absolute inset-y-0 w-1 rounded bg-teal-900" style={{ left: `calc(${c.observed * 100}% - 2px)` }} />
+                    <span className="absolute inset-y-0 left-0 rounded bg-wine-600/40" style={{ width: `${c.predicted * 100}%` }} />
+                    <span className="absolute inset-y-0 w-1 rounded bg-wine-900" style={{ left: `calc(${c.observed * 100}% - 2px)` }} />
                   </span>
                   <span className="w-14 text-right tabular-nums">{pct(c.observed, 0)}</span>
                 </div>

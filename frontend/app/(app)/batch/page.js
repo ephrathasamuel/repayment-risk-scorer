@@ -37,7 +37,7 @@ export default function BatchPage() {
       <form onSubmit={upload} className="card flex flex-wrap items-end gap-3">
         <div className="min-w-0 flex-1">
           <label className="label" htmlFor="csv">CSV file (max 5 MB)</label>
-          <input id="csv" type="file" accept=".csv,text/csv" className="field file:mr-3 file:rounded file:border-0 file:bg-teal-50 file:px-3 file:py-1 file:text-teal-800"
+          <input id="csv" type="file" accept=".csv,text/csv" className="field file:mr-3 file:rounded file:border-0 file:bg-wine-50 file:px-3 file:py-1 file:text-wine-800"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         </div>
         <button className="btn" disabled={!file || busy}>{busy ? "Scoring…" : "Upload and score"}</button>
@@ -57,7 +57,7 @@ export default function BatchPage() {
               {result.scored} scored with <span className="font-mono">{result.model_version}</span>
               {result.rejected.length > 0 && <span className="text-red-700"> · {result.rejected.length} rows rejected</span>}
             </h2>
-            <Link href="/" className="text-sm text-teal-700 hover:underline">See the portfolio →</Link>
+            <Link href="/" className="text-sm text-wine-700 hover:underline">See the portfolio →</Link>
           </div>
           {result.rejected.length > 0 && (
             <ul className="mx-4 mb-3 space-y-1 rounded-md bg-red-50 p-3 text-xs text-red-800">
@@ -80,7 +80,7 @@ export default function BatchPage() {
               <tbody className="divide-y divide-slate-100">
                 {result.decisions.map((r) => (
                   <tr key={r.id}>
-                    <td className="px-4 py-1.5"><Link href={`/decisions/${r.id}`} className="text-teal-800 hover:underline">{r.reference}</Link></td>
+                    <td className="px-4 py-1.5"><Link href={`/decisions/${r.id}`} className="text-wine-800 hover:underline">{r.reference}</Link></td>
                     <td className="px-4 py-1.5 tabular-nums">{pct(r.probability)}</td>
                     <td className="px-4 py-1.5 tabular-nums">{r.score}</td>
                     <td className="px-4 py-1.5"><Band band={r.band} /></td>

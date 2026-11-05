@@ -32,8 +32,8 @@ export default function PortfolioPage() {
 
       {summary && summary.total === 0 && (
         <div className="card text-sm text-slate-600">
-          Nothing scored yet. <Link className="font-medium text-teal-700 underline" href="/apply">Score one application</Link> or{" "}
-          <Link className="font-medium text-teal-700 underline" href="/batch">upload a CSV</Link>.
+          Nothing scored yet. <Link className="font-medium text-wine-700 underline" href="/apply">Score one application</Link> or{" "}
+          <Link className="font-medium text-wine-700 underline" href="/batch">upload a CSV</Link>.
         </div>
       )}
 
@@ -75,7 +75,7 @@ export default function PortfolioPage() {
                 {summary.probability_histogram.map((b) => (
                   <div key={b.from} className="flex h-full flex-1 flex-col items-center justify-end gap-1">
                     <span className="text-[10px] tabular-nums text-slate-500">{b.count || ""}</span>
-                    <div className="w-full rounded-t bg-teal-600" style={{ height: `${(b.count / maxHist) * 100}%`, minHeight: b.count ? 2 : 0 }} />
+                    <div className="w-full rounded-t bg-wine-600" style={{ height: `${(b.count / maxHist) * 100}%`, minHeight: b.count ? 2 : 0 }} />
                   </div>
                 ))}
               </div>
@@ -96,7 +96,7 @@ export default function PortfolioPage() {
         <section className="card mt-4 overflow-hidden p-0 sm:p-0">
           <div className="flex items-center justify-between px-4 py-3">
             <h2 className="text-sm font-semibold">Recent decisions {band && <>· band {band}</>}</h2>
-            {band && <button className="text-xs text-teal-700 underline" onClick={() => setBand("")}>Show all</button>}
+            {band && <button className="text-xs text-wine-700 underline" onClick={() => setBand("")}>Show all</button>}
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[560px] text-sm">
@@ -114,7 +114,7 @@ export default function PortfolioPage() {
                 {rows.map((r) => (
                   <tr key={r.id} className="hover:bg-slate-50">
                     <td className="px-4 py-2">
-                      <Link href={`/decisions/${r.id}`} className="font-medium text-teal-800 hover:underline">{r.reference}</Link>
+                      <Link href={`/decisions/${r.id}`} className="font-medium text-wine-800 hover:underline">{r.reference}</Link>
                       {r.source === "batch" && <span className="ml-2 text-xs text-slate-400">batch</span>}
                     </td>
                     <td className="px-4 py-2 tabular-nums">{pct(r.probability)}</td>
