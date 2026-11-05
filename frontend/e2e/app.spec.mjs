@@ -34,9 +34,9 @@ test("analyst scores an application and sees the explanation", async ({ page }) 
   await expect(page.getByText("Illustrative rules", { exact: true })).toBeVisible();
   await expect(page.getByText(/Score \(300–850\)/)).toBeVisible();
 
-  // No API key in tests: the AI note explains it is off instead of failing silently.
-  await page.getByRole("button", { name: "Write note" }).click();
-  await expect(page.getByText(/AI summaries are off/)).toBeVisible();
+  // No API key in tests: a labelled concept preview of the note is shown instead of an AI button.
+  await expect(page.getByTestId("concept-note")).toContainText("What to check before deciding:");
+  await expect(page.getByRole("button", { name: "Write note" })).toHaveCount(0);
 });
 
 test("analyst cannot switch models; admin can see the audit trail", async ({ page }) => {

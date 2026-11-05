@@ -55,6 +55,8 @@ Compose runs three Linux containers: PostgreSQL 17, the API (Python 3.13 slim) a
 
 Both accounts are created when the API starts, from `ADMIN_EMAIL` / `ADMIN_PASSWORD` and `ANALYST_EMAIL` / `ANALYST_PASSWORD` in `.env`. Passwords are stored as scrypt hashes. Sessions are signed, HTTP-only cookies.
 
+With `DEMO_ACCOUNT=true` the sign-in page also shows **Try the demo**. It opens a shared account that has no password and sees the admin pages, but is walled off: it sees only the applications it scored itself and only its own audit entries, and it cannot switch the live model.
+
 ---
 
 ## What it does
@@ -133,7 +135,7 @@ When `ANTHROPIC_API_KEY` is set, the **Write note** button sends Claude (`claude
 - the top factors, each with its value and the typical value
 - the illustrative offer
 
-The applicant's name and inputs are not sent. Claude is told not to add or recalculate numbers, and not to change the recommendation. The note can be in English or Amharic. If the model declines a request, the API retries on Anthropic's recommended fallback model. Without a key, the rest of the app works and the button explains why notes are off.
+The applicant's name and inputs are not sent. Claude is told not to add or recalculate numbers, and not to change the recommendation. The note can be in English or Amharic. If the model declines a request, the API retries on Anthropic's recommended fallback model. Without a key, the rest of the app works and the decision page shows a **concept preview**: the note's layout filled in from a fixed template with that decision's numbers, clearly labelled as not written by AI.
 
 ---
 
@@ -217,9 +219,25 @@ npm run test:e2e                        # Playwright: starts its own API and fro
 | `DATABASE_URL` | Optional. SQLite by default, PostgreSQL in Docker (`postgresql+psycopg://…`) |
 | `ANTHROPIC_API_KEY` | Optional. AI decision notes |
 | `COOKIE_SECURE` | `true` when served over HTTPS |
+| `DEMO_ACCOUNT` | `true` adds the walled-off **Try the demo** account |
 | `API_URL` (frontend) | Where the API is, e.g. `http://localhost:8000` |
 
 `.env` is git-ignored and never committed.
+
+---
+
+## Deploy (free tiers)
+
+| Part | Host | Notes |
+|---|---|---|
+| Database | **Neon** (PostgreSQL) | Free with no expiry; copy the connection string |
+| Scoring API | **Render** (Docker, from `render.yaml`) | Free plan sleeps after 15 minutes idle |
+| Web app | **Vercel** (Next.js) | Root directory `frontend` |
+
+1. **Neon:** create a project (region near the API, e.g. Frankfurt) and copy the connection string from *Connect*. The app accepts it as shown (`postgresql://…?sslmode=require`); tables are created on first start.
+2. **Render:** *New → Blueprint*, pick this repository. Render reads `render.yaml`, generates `SECRET_KEY`, sets `COOKIE_SECURE` and `DEMO_ACCOUNT`, and asks for `DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` and the optional `ANTHROPIC_API_KEY`. The trained model in `models/` is part of the image. When it is live, open `https://<service>.onrender.com/api/health`.
+3. **Vercel:** *Add New → Project*, import this repository, set **Root Directory** to `frontend`, and add `API_URL` = the Render address (no trailing slash). The browser only talks to Vercel; `proxy.js` forwards `/api/*` to the API, so the session cookie stays on the site's own domain.
+4. **Keep the API awake (optional):** add the GitHub Actions variable `API_HEALTH_URL` = `https://<service>.onrender.com/api/health`.
 
 ---
 

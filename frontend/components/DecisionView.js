@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { api, money, pct, when } from "@/lib/api";
+import { api, money, pct, when, who } from "@/lib/api";
+import { conceptNote } from "@/lib/conceptNote";
 import FactorChart from "@/components/FactorChart";
 import { BAND_RANGE, Band, ErrorBox, Recommendation } from "@/components/ui";
 
@@ -18,6 +19,7 @@ export default function DecisionView() {
   const [summary, setSummary] = useState(null);
   const [summaryError, setSummaryError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [aiAvailable, setAiAvailable] = useState(true);
 
   useEffect(() => {
     api(`/api/applications/${id}`)
@@ -26,6 +28,7 @@ export default function DecisionView() {
         if (data.ai_summary) setSummary({ text: data.ai_summary });
       })
       .catch((e) => setError(e.message));
+    api("/api/health").then((h) => setAiAvailable(!!h.ai_available)).catch(() => {});
   }, [id]);
 
   async function summarise() {
@@ -58,7 +61,7 @@ export default function DecisionView() {
             <p className="text-xs uppercase tracking-wide text-slate-500">Decision #{d.id}</p>
             <h1 className="text-2xl font-semibold tracking-tight">{d.reference}</h1>
             <p className="mt-1 text-xs text-slate-500">
-              Scored {when(d.created_at)} by {d.created_by} · model <span className="font-mono">{d.model_version}</span>
+              Scored {when(d.created_at)} by {who(d.created_by)} · model <span className="font-mono">{d.model_version}</span>
               {d.source === "batch" && " · batch upload"}
             </p>
           </div>
@@ -113,13 +116,24 @@ export default function DecisionView() {
           <section className="card">
             <h2 className="text-sm font-semibold">AI note for the credit officer</h2>
             <p className="mt-1 text-xs text-slate-500">Claude writes a short note from the model&apos;s numbers only. The applicant&apos;s name is not sent.</p>
-            <div className="mt-3 flex gap-2">
-              <select aria-label="Language" className="field w-auto" value={language} onChange={(e) => setLanguage(e.target.value)}>
-                <option value="en">English</option>
-                <option value="am">Amharic</option>
-              </select>
-              <button className="btn" onClick={summarise} disabled={busy}>{busy ? "Writing…" : summary ? "Rewrite note" : "Write note"}</button>
-            </div>
+            {aiAvailable ? (
+              <div className="mt-3 flex gap-2">
+                <select aria-label="Language" className="field w-auto" value={language} onChange={(e) => setLanguage(e.target.value)}>
+                  <option value="en">English</option>
+                  <option value="am">Amharic</option>
+                </select>
+                <button className="btn" onClick={summarise} disabled={busy}>{busy ? "Writing…" : summary ? "Rewrite note" : "Write note"}</button>
+              </div>
+            ) : !summary ? (
+              <div className="mt-3 rounded-md border border-dashed border-slate-300 p-3" data-testid="concept-note">
+                <span className="rounded bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">Concept preview</span>
+                <div className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-700">{conceptNote(d)}</div>
+                <p className="mt-2 text-xs text-slate-500">
+                  This shows the shape of the note. Here it is filled in from a fixed template with this decision&apos;s
+                  numbers, not written by AI. With an Anthropic API key, Claude writes it in English or Amharic.
+                </p>
+              </div>
+            ) : null}
             <div className="mt-3"><ErrorBox>{summaryError}</ErrorBox></div>
             {summary && (
               <div className="mt-3 whitespace-pre-line rounded-md bg-slate-50 p-3 text-sm leading-relaxed text-slate-800">{summary.text}</div>
