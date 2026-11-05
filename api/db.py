@@ -74,11 +74,21 @@ class AuditEvent(Base):
     details: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
+def normalise_url(url):
+    """Hosts such as Neon, Supabase and Render show postgres:// or postgresql:// addresses;
+    SQLAlchemy needs the psycopg (v3) driver named, which is the one installed."""
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url.removeprefix(prefix)
+    return url
+
+
 def make_engine(url):
+    url = normalise_url(url)
     if url.startswith("sqlite:///"):
         # data/ is git-ignored, so a fresh clone (or CI) has no folder for the database file yet.
         Path(url.removeprefix("sqlite:///")).parent.mkdir(parents=True, exist_ok=True)
-    kwargs = {"connect_args": {"check_same_thread": False}} if url.startswith("sqlite") else {"pool_pre_ping": True}
+    kwargs = {"connect_args": {"check_same_thread": False}} if url.startswith("sqlite") else {"pool_pre_ping": True, "pool_recycle": 300}
     return create_engine(url, **kwargs)
 
 

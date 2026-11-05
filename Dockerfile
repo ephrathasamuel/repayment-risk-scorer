@@ -16,4 +16,5 @@ RUN useradd --create-home scorer && mkdir -p /app/data && chown scorer /app/data
 USER scorer
 
 EXPOSE 8000
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Hosts such as Render set PORT; locally and in Docker Compose it is 8000.
+CMD ["sh", "-c", "exec uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips='*'"]

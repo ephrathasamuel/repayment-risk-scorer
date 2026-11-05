@@ -1,0 +1,30 @@
+# Render blueprint for the scoring API (FastAPI + LightGBM). The web app is deployed on Vercel and the
+# database lives on Neon; see "Deploy (free tiers)" in README.md.
+services:
+  - type: web
+    name: repayment-risk-scorer-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: frankfurt
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      # PostgreSQL connection string from Neon, pasted as shown.
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      # The site is served over HTTPS, so session cookies are marked Secure.
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      # Adds a "Try the demo" button: a password-less account that sees only its own work.
+      - key: DEMO_ACCOUNT
+        value: "true"
+      # Optional: turns on AI decision notes.
+      - key: ANTHROPIC_API_KEY
+        sync: false
