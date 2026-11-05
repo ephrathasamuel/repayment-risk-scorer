@@ -6,33 +6,45 @@ import { Suspense, useEffect, useState } from "react";
 import { api, who } from "@/lib/api";
 
 const LINKS = [
-  { href: "/", label: "Portfolio" },
-  { href: "/apply", label: "New application" },
-  { href: "/batch", label: "Batch upload" },
-  { href: "/models", label: "Models" },
+  { href: "/", label: "Portfolio", no: "01" },
+  { href: "/apply", label: "New application", no: "02" },
+  { href: "/batch", label: "Batch upload", no: "03" },
+  { href: "/models", label: "Models", no: "04" },
 ];
 
+function NavItem({ link, active, onClick }) {
+  return (
+    <Link
+      href={link.href}
+      onClick={onClick}
+      className={`flex items-baseline gap-3 border-l-2 py-2.5 pl-4 pr-3 text-sm transition ${
+        active ? "border-brass bg-white/[0.06] text-white" : "border-transparent text-wine-200 hover:bg-white/[0.04] hover:text-white"
+      }`}
+    >
+      <span className={`font-mono text-[10px] ${active ? "text-brass" : "text-wine-400"}`}>{link.no}</span>
+      {link.label}
+    </Link>
+  );
+}
+
 // Reads the URL, so it renders inside <Suspense> (required with cacheComponents on dynamic routes).
-function DesktopLinks() {
+function ActiveLinks({ onNavigate }) {
   const pathname = usePathname();
   const active = (href) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
-  return LINKS.map((l) => (
-    <Link
-      key={l.href}
-      href={l.href}
-      className={`rounded-md px-3 py-1.5 text-sm ${active(l.href) ? "bg-white/15 font-semibold" : "text-teal-50 hover:bg-white/10"}`}
-    >
-      {l.label}
-    </Link>
-  ));
+  return LINKS.map((l) => <NavItem key={l.href} link={l} active={active(l.href)} onClick={onNavigate} />);
 }
 
 function PlainLinks() {
-  return LINKS.map((l) => (
-    <Link key={l.href} href={l.href} className="rounded-md px-3 py-1.5 text-sm text-teal-50 hover:bg-white/10">
-      {l.label}
+  return LINKS.map((l) => <NavItem key={l.href} link={l} active={false} />);
+}
+
+function Wordmark() {
+  return (
+    <Link href="/" className="block">
+      <span className="display block text-2xl leading-none text-white">Repayment</span>
+      <span className="mt-1 block text-[10px] font-semibold uppercase tracking-[0.25em] text-brass">Risk Scorer</span>
     </Link>
-  ));
+  );
 }
 
 export default function Shell({ children }) {
@@ -49,57 +61,65 @@ export default function Shell({ children }) {
     window.location.href = new URL("/login", window.location.origin).href;
   }
 
+  const account = (
+    <div className="border-t border-white/10 px-4 py-4 text-sm">
+      {user && (
+        <>
+          <div className="truncate text-white">{who(user.email)}</div>
+          <div className="text-xs capitalize text-wine-300">{user.role}</div>
+        </>
+      )}
+      <button onClick={signOut} className="mt-3 text-xs font-semibold uppercase tracking-[0.15em] text-brass hover:text-white">
+        Sign out
+      </button>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-teal-900/20 bg-teal-900 text-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <span className="grid h-7 w-7 place-items-center rounded-md bg-teal-500 text-sm font-bold text-teal-950">R</span>
-            <span>Repayment Risk Scorer</span>
-          </Link>
+    <div className="min-h-screen md:flex">
+      {/* Desktop: oxblood sidebar that stays in place while the page scrolls */}
+      <aside className="hidden w-60 shrink-0 flex-col bg-wine-900 md:sticky md:top-0 md:flex md:h-screen">
+        <div className="px-5 pb-8 pt-7">
+          <Wordmark />
+        </div>
+        <nav className="flex-1 space-y-0.5">
+          <Suspense fallback={<PlainLinks />}>
+            <ActiveLinks />
+          </Suspense>
+        </nav>
+        {account}
+      </aside>
+
+      {/* Phone: slim top bar with a drop-down menu */}
+      <header className="bg-wine-900 md:hidden">
+        <div className="flex items-center justify-between px-4 py-3">
+          <Wordmark />
           <button
-            className="rounded-md px-2 py-1 text-sm ring-1 ring-white/30 md:hidden"
+            className="rounded-sm px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-brass ring-1 ring-white/20"
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
             aria-label="Menu"
           >
             Menu
           </button>
-          <nav className="hidden items-center gap-1 md:flex">
-            <Suspense fallback={<PlainLinks />}>
-              <DesktopLinks />
-            </Suspense>
-          </nav>
-          <div className="hidden items-center gap-3 text-sm md:flex">
-            {user && (
-              <span className="text-teal-100">
-                {who(user.email)} · <span className="capitalize">{user.role}</span>
-              </span>
-            )}
-            <button onClick={signOut} className="rounded-md px-2 py-1 ring-1 ring-white/30 hover:bg-white/10">
-              Sign out
-            </button>
-          </div>
         </div>
         {open && (
-          <nav className="border-t border-white/10 px-4 pb-3 md:hidden">
-            {LINKS.map((l) => (
-              <Link key={l.href} href={l.href} onClick={() => setOpen(false)} className="block py-2 text-sm">
-                {l.label}
-              </Link>
-            ))}
-            <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-2 text-sm">
-              <span className="text-teal-100">{who(user?.email)}</span>
-              <button onClick={signOut}>Sign out</button>
-            </div>
+          <nav className="border-t border-white/10 pb-1">
+            <Suspense fallback={<PlainLinks />}>
+              <ActiveLinks onNavigate={() => setOpen(false)} />
+            </Suspense>
+            {account}
           </nav>
         )}
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
-      <footer className="mx-auto max-w-6xl px-4 pb-8 text-xs text-slate-500">
-        Portfolio prototype. Model trained on the public UCI &quot;Default of Credit Card Clients&quot; dataset (Taiwan, 2005);
-        limits and prices are illustrative rules. Not for real lending decisions.
-      </footer>
+
+      <div className="min-w-0 flex-1">
+        <main className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-10">{children}</main>
+        <footer className="mx-auto max-w-6xl px-4 pb-8 text-xs text-stone-500 sm:px-8">
+          Portfolio prototype. Model trained on the public UCI &quot;Default of Credit Card Clients&quot; dataset (Taiwan, 2005);
+          limits and prices are illustrative rules. Not for real lending decisions.
+        </footer>
+      </div>
     </div>
   );
 }
