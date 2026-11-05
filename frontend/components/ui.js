@@ -37,9 +37,9 @@ export function Recommendation({ value, large = false }) {
 export function Stat({ label, value, hint }) {
   return (
     <div className="card">
-      <div className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</div>
-      <div className="mt-1 text-2xl font-semibold tabular-nums">{value}</div>
-      {hint && <div className="mt-1 text-xs text-slate-500">{hint}</div>}
+      <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-500">{label}</div>
+      <div className="display mt-2 text-3xl tabular-nums text-ink">{value}</div>
+      {hint && <div className="mt-1 text-xs text-stone-500">{hint}</div>}
     </div>
   );
 }
@@ -51,10 +51,10 @@ export function ErrorBox({ children }) {
 
 export function PageTitle({ title, subtitle, children }) {
   return (
-    <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-3 border-b border-line pb-5">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-slate-600">{subtitle}</p>}
+        <h1 className="display text-4xl text-ink">{title}</h1>
+        {subtitle && <p className="mt-2 text-sm text-stone-600">{subtitle}</p>}
       </div>
       {children}
     </div>
