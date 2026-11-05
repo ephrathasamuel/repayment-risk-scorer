@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { api, who } from "@/lib/api";
 
 const LINKS = [
   { href: "/", label: "Portfolio" },
@@ -73,7 +73,7 @@ export default function Shell({ children }) {
           <div className="hidden items-center gap-3 text-sm md:flex">
             {user && (
               <span className="text-teal-100">
-                {user.email} · <span className="capitalize">{user.role}</span>
+                {who(user.email)} · <span className="capitalize">{user.role}</span>
               </span>
             )}
             <button onClick={signOut} className="rounded-md px-2 py-1 ring-1 ring-white/30 hover:bg-white/10">
@@ -89,7 +89,7 @@ export default function Shell({ children }) {
               </Link>
             ))}
             <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-2 text-sm">
-              <span className="text-teal-100">{user?.email}</span>
+              <span className="text-teal-100">{who(user?.email)}</span>
               <button onClick={signOut}>Sign out</button>
             </div>
           </nav>

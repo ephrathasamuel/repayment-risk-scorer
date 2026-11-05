@@ -32,8 +32,9 @@ def make_client(tmp_path, models_dir):
 
     clients = []
 
-    def _make(ai_client=None):
+    def _make(ai_client=None, demo=False):
         cfg = Settings()
+        cfg.demo_account = demo
         cfg.database_url = f"sqlite:///{(tmp_path / 'test.db').as_posix()}"
         cfg.models_dir = models_dir
         cfg.seed_users = [(*ADMIN, "admin"), (*ANALYST, "analyst")]

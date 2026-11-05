@@ -3,6 +3,7 @@
 import csv
 import io
 import json
+import secrets
 from contextlib import asynccontextmanager
 
 import pandas as pd
@@ -21,6 +22,7 @@ from api.security import Tokens, hash_password, verify_password
 from ml.features import INPUT_COLUMNS, MONTHS
 
 COOKIE = "scorer_session"
+DEMO_EMAIL = "demo@repayment-risk-scorer.app"
 MAX_BATCH_ROWS = 5000
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 
@@ -34,6 +36,7 @@ def create_app(cfg: Settings = default_settings, ai_client=None):
     async def lifespan(app):
         with Session() as db:
             seed_users(db, cfg)
+            seed_demo(db, cfg)
             sync_registry(db, cfg)
         yield
         engine.dispose()
@@ -56,6 +59,19 @@ def create_app(cfg: Settings = default_settings, ai_client=None):
         if not user:
             raise HTTPException(401, "Please sign in.")
         return user
+
+    def is_demo(user):
+        return user.email == DEMO_EMAIL
+
+    def own_only(q, user):
+        """The demo sees only applications it scored itself; everyone else sees the whole portfolio."""
+        return q.where(Application.created_by == user.id) if is_demo(user) else q
+
+    def visible_decision(db, user, decision_id):
+        d = db.get(Decision, decision_id)
+        if not d or (is_demo(user) and d.application.created_by != user.id):
+            raise HTTPException(404, "Decision not found.")
+        return d
 
     def admin_user(user=Depends(current_user)):
         if user.role != "admin":
@@ -82,6 +98,19 @@ def create_app(cfg: Settings = default_settings, ai_client=None):
                             secure=cfg.cookie_secure, max_age=cfg.session_hours * 3600, path="/")
         audit(db, user, "sign_in")
         db.commit()
+        return UserOut(email=user.email, role=user.role)
+
+    @app.get("/api/auth/demo", tags=["auth"])
+    def demo_status():
+        return {"enabled": cfg.demo_account}
+
+    @app.post("/api/auth/demo", response_model=UserOut, tags=["auth"])
+    def demo_login(response: Response, db=Depends(get_db)):
+        user = db.scalar(select(User).where(User.email == DEMO_EMAIL)) if cfg.demo_account else None
+        if not user:
+            raise HTTPException(404, "There is no demo account.")
+        response.set_cookie(COOKIE, tokens.issue(user.id), httponly=True, samesite="lax",
+                            secure=cfg.cookie_secure, max_age=cfg.session_hours * 3600, path="/")
         return UserOut(email=user.email, role=user.role)
 
     @app.post("/api/auth/logout", status_code=204, tags=["auth"])
@@ -196,23 +225,19 @@ def create_app(cfg: Settings = default_settings, ai_client=None):
 
     @app.get("/api/applications", response_model=list[DecisionRow], tags=["scoring"])
     def list_decisions(limit: int = 50, band: str | None = None, db=Depends(get_db), user=Depends(current_user)):
-        q = select(Decision).join(Application).order_by(Decision.id.desc()).limit(min(max(limit, 1), 500))
+        q = own_only(select(Decision).join(Application).order_by(Decision.id.desc()).limit(min(max(limit, 1), 500)), user)
         if band:
             q = q.where(Decision.band == band.upper())
         return [row_out(d) for d in db.scalars(q)]
 
     @app.get("/api/applications/{decision_id}", response_model=DecisionOut, tags=["scoring"])
     def get_decision(decision_id: int, db=Depends(get_db), user=Depends(current_user)):
-        d = db.get(Decision, decision_id)
-        if not d:
-            raise HTTPException(404, "Decision not found.")
+        d = visible_decision(db, user, decision_id)
         return decision_out(db, d, threshold_for(d.model_version))
 
     @app.post("/api/applications/{decision_id}/summary", response_model=SummaryOut, tags=["scoring"])
     def summary(decision_id: int, body: SummaryIn, db=Depends(get_db), user=Depends(current_user)):
-        d = db.get(Decision, decision_id)
-        if not d:
-            raise HTTPException(404, "Decision not found.")
+        d = visible_decision(db, user, decision_id)
         if not ai.ai_available() and ai_client is None:
             raise HTTPException(503, "AI summaries are off: add ANTHROPIC_API_KEY to .env and restart the API.")
         data = {"probability": d.probability, "score": d.score, "band": d.band, "recommendation": d.recommendation,
@@ -239,14 +264,17 @@ def create_app(cfg: Settings = default_settings, ai_client=None):
 
     @app.get("/api/portfolio", tags=["portfolio"])
     def portfolio(db=Depends(get_db), user=Depends(current_user)):
-        total = db.scalar(select(func.count(Decision.id))) or 0
-        by_band = dict(db.execute(select(Decision.band, func.count(Decision.id)).group_by(Decision.band)).all())
-        by_rec = dict(db.execute(select(Decision.recommendation, func.count(Decision.id))
+        def scoped(q):
+            return own_only(q.join(Application, Decision.application_id == Application.id), user)
+
+        total = db.scalar(scoped(select(func.count(Decision.id)))) or 0
+        by_band = dict(db.execute(scoped(select(Decision.band, func.count(Decision.id))).group_by(Decision.band)).all())
+        by_rec = dict(db.execute(scoped(select(Decision.recommendation, func.count(Decision.id)))
                                  .group_by(Decision.recommendation)).all())
-        by_version = dict(db.execute(select(Decision.model_version, func.count(Decision.id))
+        by_version = dict(db.execute(scoped(select(Decision.model_version, func.count(Decision.id)))
                                      .group_by(Decision.model_version)).all())
-        avg_p = db.scalar(select(func.avg(Decision.probability))) or 0.0
-        rows = db.execute(select(Decision.probability, Decision.offer)).all()
+        avg_p = db.scalar(scoped(select(func.avg(Decision.probability)))) or 0.0
+        rows = db.execute(scoped(select(Decision.probability, Decision.offer))).all()
         exposure = sum((o or {}).get("suggested_limit", 0) for _, o in rows)
         expected_loss_share = (sum(p * (o or {}).get("suggested_limit", 0) for p, o in rows) / exposure) if exposure else 0
         buckets = [0] * 10
@@ -288,6 +316,8 @@ def create_app(cfg: Settings = default_settings, ai_client=None):
 
     @app.post("/api/models/{version}/activate", response_model=ModelOut, tags=["models"])
     def activate(version: str, db=Depends(get_db), user=Depends(admin_user)):
+        if is_demo(user):
+            raise HTTPException(403, "Switching the live model is turned off in the demo.")
         mv = db.scalar(select(ModelVersion).where(ModelVersion.version == version))
         if not mv:
             raise HTTPException(404, "Model version not found.")
@@ -304,6 +334,8 @@ def create_app(cfg: Settings = default_settings, ai_client=None):
     @app.get("/api/audit", response_model=list[AuditOut], tags=["admin"])
     def audit_log(limit: int = 100, db=Depends(get_db), user=Depends(admin_user)):
         q = select(AuditEvent).order_by(AuditEvent.id.desc()).limit(min(max(limit, 1), 1000))
+        if is_demo(user):
+            q = q.where(AuditEvent.user_email == user.email)  # never anyone else's activity
         return [AuditOut(at=e.at, user_email=e.user_email, action=e.action, model_version=e.model_version,
                          details=e.details) for e in db.scalars(q)]
 
@@ -317,6 +349,20 @@ def seed_users(db, cfg):
         email = email.strip().lower()
         if not db.scalar(select(User).where(User.email == email)):
             db.add(User(email=email, password_hash=hash_password(password), role=role))
+    db.commit()
+
+
+def seed_demo(db, cfg):
+    """Create the demo account when DEMO_ACCOUNT is on. It gets the admin pages so visitors see every
+    feature, and a fresh random password nobody knows, so only the demo button opens it."""
+    if not cfg.demo_account:
+        return
+    user = db.scalar(select(User).where(User.email == DEMO_EMAIL))
+    if not user:
+        user = User(email=DEMO_EMAIL, password_hash="", role="admin")
+        db.add(user)
+    user.role = "admin"
+    user.password_hash = hash_password(secrets.token_urlsafe(32))
     db.commit()
 
 

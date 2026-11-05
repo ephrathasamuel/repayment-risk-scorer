@@ -139,3 +139,35 @@ def test_logout_clears_session(client):
     sign_in(client, ANALYST)
     client.post("/api/auth/logout")
     assert client.get("/api/auth/me").status_code == 401
+
+
+
+def test_demo_off_by_default(client):
+    assert client.get("/api/auth/demo").json() == {"enabled": False}
+    assert client.post("/api/auth/demo").status_code == 404
+
+
+def test_demo_is_walled_off(make_client):
+    real = make_client()
+    sign_in(real, ADMIN)
+    theirs = real.post("/api/applications", json=GOOD).json()["id"]
+
+    demo = make_client(demo=True)  # same database, demo switched on
+    assert demo.get("/api/auth/demo").json() == {"enabled": True}
+    me = demo.post("/api/auth/demo").json()
+    assert me["role"] == "admin"
+    # No way in with a password.
+    assert demo.post("/api/auth/login", json={"email": me["email"], "password": "x"}).status_code == 401
+    demo.post("/api/auth/demo")
+    # Sees none of the real portfolio, cannot switch the live model, and the audit log shows only its own activity.
+    assert demo.get("/api/applications").json() == []
+    assert demo.get(f"/api/applications/{theirs}").status_code == 404
+    assert demo.get("/api/portfolio").json()["total"] == 0
+    versions = [m["version"] for m in demo.get("/api/models").json()]
+    assert demo.post(f"/api/models/{versions[-1]}/activate").status_code == 403
+    assert all(e["user_email"] == me["email"] for e in demo.get("/api/audit").json())
+    # Its own work shows up.
+    mine = demo.post("/api/applications", json=RISKY)
+    assert mine.status_code == 201
+    assert [d["id"] for d in demo.get("/api/applications").json()] == [mine.json()["id"]]
+    assert demo.get("/api/portfolio").json()["total"] == 1

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api, pct, when } from "@/lib/api";
+import { api, pct, when, who } from "@/lib/api";
 import { ErrorBox, PageTitle } from "@/components/ui";
 
 export default function ModelsPage() {
@@ -195,7 +195,7 @@ export default function ModelsPage() {
                 {audit.map((e, i) => (
                   <tr key={i}>
                     <td className="px-4 py-1.5 text-slate-500">{when(e.at)}</td>
-                    <td className="px-4 py-1.5">{e.user_email}</td>
+                    <td className="px-4 py-1.5">{who(e.user_email)}</td>
                     <td className="px-4 py-1.5 font-medium">{e.action.replaceAll("_", " ")}</td>
                     <td className="px-4 py-1.5 font-mono">{e.model_version ?? "—"}</td>
                     <td className="px-4 py-1.5 text-slate-500">

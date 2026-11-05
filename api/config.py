@@ -16,6 +16,9 @@ class Settings:
         self.secret_key = os.environ.get("SECRET_KEY") or secrets.token_urlsafe(32)
         self.cookie_secure = os.environ.get("COOKIE_SECURE", "false").lower() == "true"
         self.session_hours = int(os.environ.get("SESSION_HOURS", "12"))
+        # A shared, password-less demo account opened by the "Try the demo" button. It sees
+        # only its own work and cannot change anything shared. Off unless set.
+        self.demo_account = os.environ.get("DEMO_ACCOUNT", "false").lower() == "true"
         # Accounts created on start-up if they don't exist yet. Never logged.
         self.seed_users = [
             (os.environ.get("ADMIN_EMAIL"), os.environ.get("ADMIN_PASSWORD"), "admin"),

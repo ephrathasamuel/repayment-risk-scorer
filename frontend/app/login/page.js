@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 
 export default function LoginPage() {
@@ -8,6 +8,30 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [demo, setDemo] = useState(false);
+
+  // The "Try the demo" box appears only when the API has DEMO_ACCOUNT on.
+  useEffect(() => {
+    api("/api/auth/demo").then((r) => setDemo(!!r?.enabled)).catch(() => {});
+  }, []);
+
+  function goNext() {
+    const next = new URLSearchParams(window.location.search).get("next");
+    // Only same-site paths, never an absolute URL.
+    window.location.href = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  }
+
+  async function tryDemo() {
+    setBusy(true);
+    setError("");
+    try {
+      await api("/api/auth/demo", { method: "POST" });
+      goNext();
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  }
 
   async function submit(e) {
     e.preventDefault();
@@ -15,9 +39,7 @@ export default function LoginPage() {
     setError("");
     try {
       await api("/api/auth/login", { method: "POST", json: { email, password } });
-      const next = new URLSearchParams(window.location.search).get("next");
-      // Only same-site paths, never an absolute URL.
-      window.location.href = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+      goNext();
     } catch (err) {
       setError(err.message);
       setBusy(false);
@@ -47,6 +69,19 @@ export default function LoginPage() {
           <button className="btn w-full" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
           <p className="text-center text-xs text-slate-500">Accounts are created by the administrator.</p>
         </form>
+        {demo && (
+          <div className="card mt-4 space-y-3">
+            <div>
+              <p className="text-sm font-semibold">Just looking around?</p>
+              <p className="mt-1 text-sm text-slate-500">
+                Open the demo with every feature. It is separate from real accounts and their data.
+              </p>
+            </div>
+            <button type="button" className="btn-ghost w-full" onClick={tryDemo} disabled={busy}>
+              {busy ? "Opening…" : "Try the demo"}
+            </button>
+          </div>
+        )}
       </div>
     </main>
   );
