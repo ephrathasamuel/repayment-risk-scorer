@@ -1,8 +1,27 @@
 @import "tailwindcss";
 
+/* Oxblood on warm ivory, with a muted brass accent: a private-bank look. */
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display-serif);
+
+  --color-wine-50: #fbf3f5;
+  --color-wine-100: #f6e4ea;
+  --color-wine-200: #ecc7d3;
+  --color-wine-300: #dc9fb3;
+  --color-wine-400: #c46d8b;
+  --color-wine-500: #a8456a;
+  --color-wine-600: #8c2e52;
+  --color-wine-700: #6d1a36;
+  --color-wine-800: #5a1530;
+  --color-wine-900: #4a1124;
+  --color-wine-950: #2c0915;
+
+  --color-paper: #faf7f2;
+  --color-line: #e7ded3;
+  --color-ink: #1f1a1c;
+  --color-brass: #c8a46b;
 }
 
 body {
@@ -11,17 +30,23 @@ body {
 
 /* Shared form controls */
 .field {
-  @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20;
+  @apply w-full rounded-sm border border-line bg-white px-3 py-2 text-sm outline-none focus:border-wine-700 focus:ring-2 focus:ring-wine-700/15;
 }
 .label {
-  @apply mb-1 block text-xs font-medium text-slate-600;
+  @apply mb-1 block text-[11px] font-semibold uppercase tracking-[0.08em] text-stone-500;
 }
 .btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-md bg-teal-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60;
+  @apply inline-flex items-center justify-center gap-2 rounded-sm bg-wine-700 px-4 py-2 text-sm font-semibold text-white hover:bg-wine-800 disabled:cursor-not-allowed disabled:opacity-60;
 }
 .btn-ghost {
-  @apply inline-flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-60;
+  @apply inline-flex items-center justify-center gap-2 rounded-sm border border-line bg-white px-3 py-2 text-sm font-medium text-ink hover:border-wine-300 hover:bg-wine-50 disabled:opacity-60;
 }
+/* Ledger cards: hairline border, square corners, a thin oxblood rule on top. */
 .card {
-  @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5;
+  @apply rounded-sm border border-line border-t-2 border-t-wine-700 bg-white p-4 sm:p-5;
+}
+.display {
+  font-family: var(--font-display-serif), Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
