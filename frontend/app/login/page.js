@@ -47,42 +47,60 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-gradient-to-b from-teal-900 to-teal-950 px-4">
-      <div className="w-full max-w-sm">
-        <div className="mb-6 text-center text-white">
-          <div className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-lg bg-teal-500 text-lg font-bold text-teal-950">R</div>
-          <h1 className="text-xl font-semibold">Repayment Risk Scorer</h1>
-          <p className="mt-1 text-sm text-teal-100">Explainable credit decisions from repayment history</p>
+    <main className="grid min-h-screen bg-paper lg:grid-cols-[1.1fr_1fr]">
+      <section className="relative flex flex-col justify-between overflow-hidden bg-wine-900 px-8 py-10 text-white sm:px-14 lg:py-14">
+        <div>
+          <span className="display block text-3xl leading-none">Repayment</span>
+          <span className="mt-1 block text-[10px] font-semibold uppercase tracking-[0.3em] text-brass">Risk Scorer</span>
         </div>
-        <form onSubmit={submit} className="card space-y-4">
-          <div>
-            <label className="label" htmlFor="email">Email</label>
-            <input id="email" type="email" autoComplete="username" required className="field"
-              value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
-          <div>
-            <label className="label" htmlFor="password">Password</label>
-            <input id="password" type="password" autoComplete="current-password" required className="field"
-              value={password} onChange={(e) => setPassword(e.target.value)} />
-          </div>
-          {error && <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-          <button className="btn w-full" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
-          <p className="text-center text-xs text-slate-500">Accounts are created by the administrator.</p>
-        </form>
-        {demo && (
-          <div className="card mt-4 space-y-3">
+        <div className="my-12 max-w-md lg:my-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-brass">Explainable credit decisions</p>
+          <h1 className="display mt-4 text-4xl leading-[1.1] sm:text-5xl">Every score, with its reasons.</h1>
+          <p className="mt-5 text-sm leading-relaxed text-wine-200">
+            A gradient-boosted model reads six months of repayment history, prices the risk into a band, and shows the
+            factors that moved it, so a credit officer can check the decision rather than trust it.
+          </p>
+        </div>
+        <dl className="grid max-w-md grid-cols-3 gap-4 border-t border-white/15 pt-6 text-xs">
+          <div><dt className="text-wine-300">Model</dt><dd className="mt-1 font-semibold">LightGBM</dd></div>
+          <div><dt className="text-wine-300">Explained by</dt><dd className="mt-1 font-semibold">SHAP</dd></div>
+          <div><dt className="text-wine-300">Audit</dt><dd className="mt-1 font-semibold">Every decision</dd></div>
+        </dl>
+        <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full border border-brass/20" />
+        <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full border border-brass/30" />
+      </section>
+
+      <section className="flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-sm">
+          <h2 className="display text-3xl text-ink">Sign in</h2>
+          <p className="mt-1 text-sm text-stone-500">Accounts are created by the administrator.</p>
+          <form onSubmit={submit} className="mt-8 space-y-5">
             <div>
-              <p className="text-sm font-semibold">Just looking around?</p>
-              <p className="mt-1 text-sm text-slate-500">
+              <label className="label" htmlFor="email">Email</label>
+              <input id="email" type="email" autoComplete="username" required className="field"
+                value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div>
+              <label className="label" htmlFor="password">Password</label>
+              <input id="password" type="password" autoComplete="current-password" required className="field"
+                value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+            {error && <p role="alert" className="rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <button className="btn w-full" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
+          </form>
+          {demo && (
+            <div className="mt-10 border-t border-line pt-6">
+              <p className="text-sm font-semibold text-ink">Just looking around?</p>
+              <p className="mt-1 text-sm text-stone-500">
                 Open the demo with every feature. It is separate from real accounts and their data.
               </p>
+              <button type="button" className="btn-ghost mt-4 w-full" onClick={tryDemo} disabled={busy}>
+                {busy ? "Opening…" : "Try the demo"}
+              </button>
             </div>
-            <button type="button" className="btn-ghost w-full" onClick={tryDemo} disabled={busy}>
-              {busy ? "Opening…" : "Try the demo"}
-            </button>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </section>
     </main>
   );
 }
