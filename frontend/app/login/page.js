@@ -8,11 +8,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [demo, setDemo] = useState(false);
+  // "checking" while the API answers (it can take half a minute to wake on a free plan), then "on" or "off".
+  const [demo, setDemo] = useState("checking");
 
-  // The "Try the demo" box appears only when the API has DEMO_ACCOUNT on.
+  // The "Try the demo" box is hidden only when the API says DEMO_ACCOUNT is off.
   useEffect(() => {
-    api("/api/auth/demo").then((r) => setDemo(!!r?.enabled)).catch(() => {});
+    api("/api/auth/demo").then((r) => setDemo(r?.enabled ? "on" : "off")).catch(() => {});
   }, []);
 
   function goNext() {
@@ -88,15 +89,18 @@ export default function LoginPage() {
             {error && <p role="alert" className="rounded-sm border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <button className="btn w-full" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
           </form>
-          {demo && (
+          {demo !== "off" && (
             <div className="mt-10 border-t border-line pt-6">
               <p className="text-sm font-semibold text-ink">Just looking around?</p>
               <p className="mt-1 text-sm text-stone-500">
                 Open the demo with every feature. It is separate from real accounts and their data.
               </p>
               <button type="button" className="btn-ghost mt-4 w-full" onClick={tryDemo} disabled={busy}>
-                {busy ? "Opening…" : "Try the demo"}
+                {busy ? "Opening… this can take up to a minute" : "Try the demo"}
               </button>
+              {demo === "checking" && !busy && (
+                <p className="mt-2 text-xs text-stone-500">The demo server may be waking up, so the first sign-in can take up to a minute.</p>
+              )}
             </div>
           )}
         </div>
