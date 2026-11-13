@@ -2,6 +2,8 @@
 
 A full-stack credit-risk tool for a lender's credit team. An analyst enters a borrower's last six months of statements and repayments (or uploads a CSV of thousands), and the app returns the **probability of missing the next payment**, a 300–850 score, a risk band, a recommendation, and **the factors behind that score**. Every decision is stored with the model version that made it, and an admin chooses which trained model is live.
 
+**Live:** https://repayment-risk-scorer.vercel.app (the scoring API is on Render's free plan, so the first request after a quiet spell can take about a minute)
+
 It is built with a **Next.js** frontend, a **FastAPI** scoring service, a **LightGBM** model with **SHAP** explanations, and **PostgreSQL** (SQLite for quick local runs). Claude can optionally write a short decision note in **English or Amharic**.
 
 <p>
